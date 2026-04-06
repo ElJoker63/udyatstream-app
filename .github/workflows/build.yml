@@ -175,56 +175,17 @@ jobs:
             tar -czf ../../UDYATSTREAM-ios.tar.gz .
           fi
 
-      - name: Create Release via API
-        shell: bash
-        run: |
-          set -x
-          echo "=== Current directory ===" 
-          pwd
-          echo ""
-          echo "=== Auth check ==="
-          curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/user | grep -o '"login":"[^"]*"'
-          echo ""
-          echo "=== Checking each file explicitly ==="
-          for f in release/android/app-debug.apk release/windows/UDYATSTREAM-windows.zip release/linux/UDYATSTREAM-linux.zip release/macos/UDYATSTREAM-macos.zip release/ios/UDYATSTREAM-ios.tar.gz; do
-            if [ -f "$f" ]; then
-              echo "EXISTS: $f ($(ls -lh $f | awk '{print $5}'))"
-            else
-              echo "NOT FOUND: $f"
-            fi
-          done
-          
-          # Create release via API - check if we can
-          echo ""
-          echo "=== Creating release ==="
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            -d '{
-              "tag_name": "v1.0.0",
-              "name": "UDYATSTREAM v1.0.0",
-              "body": "Automatic release with all platform builds",
-              "draft": false,
-              "prerelease": false
-            }' \
-            https://api.github.com/repos/ElJoker63/udyatstream-app/releases)
-          
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | head -n -1)
-          echo "HTTP Code: $HTTP_CODE"
-          echo "Response: $BODY"
-          
-          # Check if release was created
-          if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "422" ]; then
-            echo "Release endpoint accessed"
-            # Get release by tag
-            TAG_RESPONSE=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              https://api.github.com/repos/ElJoker63/udyatstream-app/releases/tags/v1.0.0)
-            echo "Tag response: $TAG_RESPONSE"
-          fi
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release/android/app-debug.apk
+            release/windows/UDYATSTREAM-windows.zip
+            release/linux/UDYATSTREAM-linux.zip
+            release/macos/UDYATSTREAM-macos.zip
+            release/ios/UDYATSTREAM-ios.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
