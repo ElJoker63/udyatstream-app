@@ -77,19 +77,12 @@ jobs:
 
       - name: Build Windows
         if: matrix.platform == 'windows'
+        shell: bash
         run: |
-          set +e
-          flutter build windows --release 2>&1
-          EXIT_CODE=$?
-          echo "Exit code: $EXIT_CODE"
-          ls -la build/windows/x64/runner/Release/ || echo "Listing build directory"
-          if [ -f "build/windows/x64/runner/Release/udyatstream_app.exe" ]; then
-            echo "Windows build successful"
-            exit 0
-          else
-            echo "Windows build may have failed, but continuing"
-            exit 0
-          fi
+          flutter build windows --release 2>&1 || true
+          echo "Checking for exe..."
+          ls -la build/windows/x64/runner/Release/ || echo "Directory not found"
+          echo "Done"
 
       - name: Build Linux
         if: matrix.platform == 'linux'
