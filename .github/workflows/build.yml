@@ -105,7 +105,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -123,44 +124,56 @@ jobs:
         with:
           name: windows-release
           path: release/windows
+        continue-on-error: true
 
       - name: Download iOS
         uses: actions/download-artifact@v4
         with:
           name: ios-release
           path: release/ios
+        continue-on-error: true
 
       - name: Download Linux
         uses: actions/download-artifact@v4
         with:
           name: linux-release
           path: release/linux
+        continue-on-error: true
 
       - name: Download macOS
         uses: actions/download-artifact@v4
         with:
           name: macos-release
           path: release/macos
+        continue-on-error: true
 
       - name: Create Windows zip
         run: |
-          cd release/windows
-          zip -r ../../UDYATSTREAM-windows.zip .
+          if [ -d "release/windows" ]; then
+            cd release/windows
+            zip -r ../../UDYATSTREAM-windows.zip .
+          fi
 
       - name: Create Linux zip
         run: |
-          cd release/linux
-          zip -r ../../UDYATSTREAM-linux.zip .
+          if [ -d "release/linux" ]; then
+            cd release/linux
+            zip -r ../../UDYATSTREAM-linux.zip .
+          fi
 
       - name: Create macOS zip
         run: |
-          cd release/macos
-          zip -r ../../UDYATSTREAM-macos.zip .
+          if [ -d "release/macos" ]; then
+            cd release/macos
+            zip -r ../../UDYATSTREAM-macos.zip .
+          fi
 
       - name: Create iOS tar.gz
         run: |
-          cd release/ios
-          tar -czf ../../UDYATSTREAM-ios.tar.gz .
+          if [ -d "release/ios" ]; then
+            cd release/ios
+            tar -czf ../../UDYATSTREAM-ios.tar.gz .
+          fi
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
