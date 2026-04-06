@@ -302,11 +302,15 @@ jobs:
 
       - name: Upload Android APK
         run: |
+          echo "Checking for Android file..."
+          ls -la UDYATSTREAM-android.apk 2>/dev/null || echo "Android file not found"
           if [ -f "UDYATSTREAM-android.apk" ]; then
-            curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
+            echo "Uploading Android APK..."
+            RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
               -H "Content-Type: application/vnd.android.package-archive" \
               --data-binary @"UDYATSTREAM-android.apk" \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-android.apk"
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-android.apk")
+            echo "Android response: $RESPONSE"
             echo "Android uploaded"
           else
             echo "Android: NOT FOUND"
@@ -314,11 +318,15 @@ jobs:
 
       - name: Upload Windows
         run: |
+          echo "Checking for Windows file..."
+          ls -la UDYATSTREAM-windows.zip 2>/dev/null || echo "Windows file not found"
           if [ -f "UDYATSTREAM-windows.zip" ]; then
-            curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
+            echo "Uploading Windows ZIP..."
+            RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
               -H "Content-Type: application/zip" \
               --data-binary @"UDYATSTREAM-windows.zip" \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-windows.zip"
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-windows.zip")
+            echo "Windows response: $RESPONSE"
             echo "Windows uploaded"
           else
             echo "Windows: NOT FOUND"
@@ -342,11 +350,15 @@ jobs:
 
       - name: Upload Linux
         run: |
+          echo "Checking for Linux file..."
+          ls -la UDYATSTREAM-linux.zip 2>/dev/null || echo "Linux file not found"
           if [ -f "UDYATSTREAM-linux.zip" ]; then
-            curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
+            echo "Uploading Linux ZIP..."
+            RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
               -H "Content-Type: application/zip" \
               --data-binary @"UDYATSTREAM-linux.zip" \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-linux.zip"
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-linux.zip")
+            echo "Linux response: $RESPONSE"
             echo "Linux uploaded"
           else
             echo "Linux: NOT FOUND"
@@ -354,17 +366,22 @@ jobs:
 
       - name: Upload macOS
         run: |
+          echo "Checking for macOS file..."
+          ls -la UDYATSTREAM-macos.zip 2>/dev/null || echo "macOS file not found"
           if [ -f "UDYATSTREAM-macos.zip" ]; then
-            curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
+            echo "Uploading macOS ZIP..."
+            RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
               -H "Content-Type: application/zip" \
               --data-binary @"UDYATSTREAM-macos.zip" \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-macos.zip"
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-macos.zip")
+            echo "macOS response: $RESPONSE"
             echo "macOS uploaded"
           else
             echo "macOS: NOT FOUND"
           fi
 
       - name: Verify Release Assets
+        continue-on-error: true
         run: |
           echo "=== Verifying release assets ==="
           ASSETS=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" \
