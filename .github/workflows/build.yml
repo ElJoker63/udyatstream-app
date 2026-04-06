@@ -190,15 +190,11 @@ jobs:
             fi
           done
           echo ""
+          echo "=== Auth check ==="
+          gh auth status
           echo "=== Creating release ==="
-          gh release create "v1.0.0" --title "UDYATSTREAM v1.0.0" --notes "Automatic release" --draft false --prerelease false --repo ElJoker63/udyatstream-app || echo "Release create failed"
+          gh release create "v1.0.0" --title "UDYATSTREAM v1.0.0" --notes "Automatic release" --draft false --prerelease false
           echo "=== Listing releases ==="
-          gh release list --repo ElJoker63/udyatstream-app || echo "Release list failed"
-          echo "=== Uploading assets ==="
-          for f in release/android/app-debug.apk release/windows/UDYATSTREAM-windows.zip release/linux/UDYATSTREAM-linux.zip release/macos/UDYATSTREAM-macos.zip release/ios/UDYATSTREAM-ios.tar.gz; do
-            if [ -f "$f" ]; then
-              gh release upload "v1.0.0" "$f" --repo ElJoker63/udyatstream-app || echo "Upload $f failed"
-            fi
-          done
+          gh release list
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
