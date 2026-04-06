@@ -175,6 +175,16 @@ jobs:
             tar -czf ../../UDYATSTREAM-ios.tar.gz .
           fi
 
+      - name: List release files
+        run: |
+          ls -la release/
+          ls -la release/android/ 2>/dev/null || true
+          ls -la release/windows/ 2>/dev/null || true
+          ls -la release/linux/ 2>/dev/null || true
+          ls -la release/macos/ 2>/dev/null || true
+          ls -la release/ios/ 2>/dev/null || true
+          ls -la *.zip *.tar.gz 2>/dev/null || true
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -182,10 +192,10 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            release/android/app-debug.apk
-            release/windows/UDYATSTREAM-windows.zip
-            release/linux/UDYATSTREAM-linux.zip
-            release/macos/UDYATSTREAM-macos.zip
-            release/ios/UDYATSTREAM-ios.tar.gz
+            app-debug.apk
+            UDYATSTREAM-windows.zip
+            UDYATSTREAM-linux.zip
+            UDYATSTREAM-macos.zip
+            UDYATSTREAM-ios.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
