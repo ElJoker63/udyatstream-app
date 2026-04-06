@@ -194,6 +194,9 @@ jobs:
 
       - name: Create Release
         run: |
+          echo "=== GitHub token check ==="
+          gh auth status
+          echo ""
           echo "=== Checking files ==="
           for f in app-debug.apk UDYATSTREAM-windows.zip UDYATSTREAM-linux.zip UDYATSTREAM-macos.zip UDYATSTREAM-ios.tar.gz; do
             if [ -f "$f" ]; then
@@ -203,16 +206,12 @@ jobs:
             fi
           done
           echo ""
-          echo "=== Creating release with gh ==="
-          # Use GitHub CLI to create release with each file
-          gh release create v1.0.0 --title "UDYATSTREAM v1.0.0" --notes "Build artifacts" --draft=false --prerelease=false || true
-          echo "=== Uploading assets ==="
-          for f in app-debug.apk UDYATSTREAM-windows.zip UDYATSTREAM-linux.zip UDYATSTREAM-macos.zip UDYATSTREAM-ios.tar.gz; do
-            if [ -f "$f" ]; then
-              gh release upload v1.0.0 "$f" --clobber || echo "Upload failed: $f"
-            fi
-          done
-          echo "=== Listing releases ==="
+          echo "=== Checking existing releases ==="
+          gh release list || echo "No releases found"
+          echo ""
+          echo "=== Creating release ==="
+          gh release create v1.0.0 --title "UDYATSTREAM v1.0.0" --notes "Automatic release" --draft=false --prerelease=false -v
+          echo "=== After create ==="
           gh release list
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
