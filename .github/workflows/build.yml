@@ -227,8 +227,10 @@ jobs:
 
       - name: Upload Android APK
         run: |
+          echo "Checking Android file..."
+          ls -la release/android/
           if [ -f "release/android/app-debug.apk" ]; then
-            gh release upload v1.0.0 "release/android/app-debug.apk" --clobber
+            gh release upload v1.0.0 "release/android/app-debug.apk" --clobber --debug
             echo "Android uploaded"
           else
             echo "Android: NOT FOUND"
@@ -238,11 +240,14 @@ jobs:
 
       - name: Upload Windows
         run: |
+          echo "Checking Windows file..."
+          ls -la UDYATSTREAM-windows.zip
           if [ -f "UDYATSTREAM-windows.zip" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-windows.zip --clobber
+            gh release upload v1.0.0 UDYATSTREAM-windows.zip --clobber --debug
             echo "Windows uploaded"
           else
-            echo "Windows: NOT FOUND"
+            echo "Windows zip not found, checking release/windows dir:"
+            ls -la release/windows/
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
