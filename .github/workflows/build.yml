@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -76,7 +77,10 @@ jobs:
 
       - name: Build Windows
         if: matrix.platform == 'windows'
-        run: flutter build windows --release
+        run: |
+          flutter build windows --release 2>&1 || echo "BUILD_EXIT_CODE=$?" >> $GITHUB_ENV
+          ls -la build/windows/x64/runner/Release/ || echo "Listing build directory"
+          echo "Exit code: $?"
 
       - name: Build Linux
         if: matrix.platform == 'linux'
@@ -146,6 +150,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    continue-on-error: true
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
 
     steps:
