@@ -192,7 +192,6 @@ jobs:
 
       - name: Create Release
         id: create_release
-        continue-on-error: true
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
