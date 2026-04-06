@@ -189,6 +189,18 @@ jobs:
           if [ -f "release/android/app-debug.apk" ]; then
             cp release/android/app-debug.apk .
           fi
+          if [ -f "release/windows/UDYATSTREAM-windows.zip" ]; then
+            cp release/windows/UDYATSTREAM-windows.zip .
+          fi
+          if [ -f "release/linux/UDYATSTREAM-linux.zip" ]; then
+            cp release/linux/UDYATSTREAM-linux.zip .
+          fi
+          if [ -f "release/macos/UDYATSTREAM-macos.zip" ]; then
+            cp release/macos/UDYATSTREAM-macos.zip .
+          fi
+          if [ -f "release/ios/UDYATSTREAM-ios.ipa" ]; then
+            cp release/ios/UDYATSTREAM-ios.ipa .
+          fi
 
       - name: Delete existing release if exists
         run: |
@@ -196,6 +208,20 @@ jobs:
           git push --delete origin v1.0.0 || true
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
+      - name: List files before upload
+        run: |
+          echo "=== Current directory ==="
+          ls -la
+          echo ""
+          echo "=== Checking all files ==="
+          for f in app-debug.apk UDYATSTREAM-windows.zip UDYATSTREAM-linux.zip UDYATSTREAM-macos.zip UDYATSTREAM-ios.ipa; do
+            if [ -f "$f" ]; then
+              echo "FOUND: $f ($(ls -lh $f | awk '{print $5}'))"
+            else
+              echo "MISSING: $f"
+            fi
+          done
 
       - name: Create Release
         id: create_release
