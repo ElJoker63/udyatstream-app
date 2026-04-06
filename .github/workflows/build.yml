@@ -180,23 +180,30 @@ jobs:
         run: |
           FILES=""
           if [ -f "release/android/app-debug.apk" ]; then
+            echo "Found Android APK"
             FILES="$FILES release/android/app-debug.apk"
           fi
-          if [ -f "UDYATSTREAM-windows.zip" ]; then
-            FILES="$FILES UDYATSTREAM-windows.zip"
+          if [ -f "release/windows/UDYATSTREAM-windows.zip" ]; then
+            echo "Found Windows zip"
+            FILES="$FILES release/windows/UDYATSTREAM-windows.zip"
           fi
-          if [ -f "UDYATSTREAM-linux.zip" ]; then
-            FILES="$FILES UDYATSTREAM-linux.zip"
+          if [ -f "release/linux/UDYATSTREAM-linux.zip" ]; then
+            echo "Found Linux zip"
+            FILES="$FILES release/linux/UDYATSTREAM-linux.zip"
           fi
-          if [ -f "UDYATSTREAM-macos.zip" ]; then
-            FILES="$FILES UDYATSTREAM-macos.zip"
+          if [ -f "release/macos/UDYATSTREAM-macos.zip" ]; then
+            echo "Found macOS zip"
+            FILES="$FILES release/macos/UDYATSTREAM-macos.zip"
           fi
-          if [ -f "UDYATSTREAM-ios.tar.gz" ]; then
-            FILES="$FILES UDYATSTREAM-ios.tar.gz"
+          if [ -f "release/ios/UDYATSTREAM-ios.tar.gz" ]; then
+            echo "Found iOS tar.gz"
+            FILES="$FILES release/ios/UDYATSTREAM-ios.tar.gz"
           fi
           echo "Files to upload: $FILES"
           if [ -n "$FILES" ]; then
             gh release create "v1.0.0" $FILES --draft false --prerelease false --generate-notes
+          else
+            echo "No files found to upload"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
