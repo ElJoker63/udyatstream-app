@@ -225,62 +225,88 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Get Release ID
+        id: get_release
+        run: |
+          RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/v1.0.0" | jq -r '.id')
+          echo "Release ID: $RELEASE_ID"
+          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
       - name: Upload Android APK
         run: |
-          echo "Checking Android file..."
-          ls -la release/android/
           if [ -f "release/android/app-debug.apk" ]; then
-            gh release upload v1.0.0 "release/android/app-debug.apk" --clobber --debug
+            curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"release/android/app-debug.apk" \
+              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/${{ steps.get_release.outputs.release_id }}/assets?name=UDYATSTREAM-android.apk"
             echo "Android uploaded"
           else
-            echo "Android: NOT FOUND"
+            echo "Android: NOT FOUND (build failed)"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Upload Windows
         run: |
-          echo "Checking Windows file..."
-          ls -la UDYATSTREAM-windows.zip
           if [ -f "UDYATSTREAM-windows.zip" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-windows.zip --clobber --debug
+            curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/zip" \
+              --data-binary @"UDYATSTREAM-windows.zip" \
+              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/${{ steps.get_release.outputs.release_id }}/assets?name=UDYATSTREAM-windows.zip"
             echo "Windows uploaded"
           else
-            echo "Windows zip not found, checking release/windows dir:"
-            ls -la release/windows/
+            echo "Windows: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Upload Linux
         run: |
           if [ -f "UDYATSTREAM-linux.zip" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-linux.zip --clobber
+            curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/zip" \
+              --data-binary @"UDYATSTREAM-linux.zip" \
+              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/${{ steps.get_release.outputs.release_id }}/assets?name=UDYATSTREAM-linux.zip"
             echo "Linux uploaded"
           else
             echo "Linux: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Upload macOS
         run: |
           if [ -f "UDYATSTREAM-macos.zip" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-macos.zip --clobber
+            curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/zip" \
+              --data-binary @"UDYATSTREAM-macos.zip" \
+              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/${{ steps.get_release.outputs.release_id }}/assets?name=UDYATSTREAM-macos.zip"
             echo "macOS uploaded"
           else
             echo "macOS: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Upload iOS
         run: |
           if [ -f "UDYATSTREAM-ios.tar.gz" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-ios.tar.gz --clobber
+            curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/gzip" \
+              --data-binary @"UDYATSTREAM-ios.tar.gz" \
+              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/${{ steps.get_release.outputs.release_id }}/assets?name=UDYATSTREAM-ios.tar.gz"
             echo "iOS uploaded"
           else
             echo "iOS: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
