@@ -99,7 +99,7 @@ jobs:
             ls -la build/ios/iphoneos/ 2>/dev/null || echo "No iOS directory"
           fi
           if [ "${{ matrix.platform }}" = "windows" ]; then
-            ls -la build/windows/x64/Release/bundle/ 2>/dev/null || echo "No Windows directory"
+            ls -la build/windows/x64/runner/Release/ 2>/dev/null || echo "No Windows directory"
           fi
           if [ "${{ matrix.platform }}" = "linux" ]; then
             ls -la build/linux/x64/release/bundle/ 2>/dev/null || echo "No Linux directory"
