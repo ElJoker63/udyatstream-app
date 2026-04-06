@@ -190,7 +190,7 @@ jobs:
             fi
           done
           
-          # Create release via API
+          # Create release via API - ignore if already exists
           echo ""
           echo "=== Creating release ==="
           RESPONSE=$(curl -s -X POST \
@@ -204,28 +204,72 @@ jobs:
               "draft": false,
               "prerelease": false
             }' \
-            https://api.github.com/repos/ElJoker63/udyatstream-app/releases)
+            https://api.github.com/repos/ElJoker63/udyatstream-app/releases) || true
           
           echo "Release response: $RESPONSE"
           
-          RELEASE_ID=$(echo $RESPONSE | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+          # Handle case where release might already exist or response is different
+          RELEASE_ID=$(echo $RESPONSE | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2) || true
+          if [ -z "$RELEASE_ID" ]; then
+            # Try to get existing release
+            RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              https://api.github.com/repos/ElJoker63/udyatstream-app/releases/tags/v1.0.0 | \
+              grep -o '"id":[0-9]*' | head -1 | cut -d: -f2) || true
+          fi
           echo "Release ID: $RELEASE_ID"
           
-          # Upload assets
-          echo "=== Uploading assets ==="
-          for f in release/android/app-debug.apk release/windows/UDYATSTREAM-windows.zip release/linux/UDYATSTREAM-linux.zip release/macos/UDYATSTREAM-macos.zip release/ios/UDYATSTREAM-ios.tar.gz; do
-            if [ -f "$f" ]; then
-              FILENAME=$(basename $f)
-              echo "Uploading $FILENAME..."
+          if [ -n "$RELEASE_ID" ]; then
+            # Upload assets - try zip first then others
+            echo "=== Uploading assets ==="
+            # Upload as zip files
+            if [ -f "release/windows/UDYATSTREAM-windows.zip" ]; then
+              echo "Uploading Windows..."
               curl -s -X POST \
                 -H "Authorization: token $GITHUB_TOKEN" \
                 -H "Accept: application/vnd.github+json" \
                 -H "Content-Type: application/zip" \
-                --data-binary @"$f" \
-                "https://uploads.github.com/repos/ElJoker63/udyatstream-app/releases/$RELEASE_ID/assets?name=$FILENAME" || echo "Upload failed for $FILENAME"
+                --data-binary @"release/windows/UDYATSTREAM-windows.zip" \
+                "https://uploads.github.com/repos/ElJoker63/udyatstream-app/releases/$RELEASE_ID/assets?name=UDYATSTREAM-windows.zip" || echo "Windows upload failed"
             fi
-          done
-          
-          echo "=== Done ==="
+            if [ -f "release/linux/UDYATSTREAM-linux.zip" ]; then
+              echo "Uploading Linux..."
+              curl -s -X POST \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "Content-Type: application/zip" \
+                --data-binary @"release/linux/UDYATSTREAM-linux.zip" \
+                "https://uploads.github.com/repos/ElJoker63/udyatstream-app/releases/$RELEASE_ID/assets?name=UDYATSTREAM-linux.zip" || echo "Linux upload failed"
+            fi
+            if [ -f "release/macos/UDYATSTREAM-macos.zip" ]; then
+              echo "Uploading macOS..."
+              curl -s -X POST \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "Content-Type: application/zip" \
+                --data-binary @"release/macos/UDYATSTREAM-macos.zip" \
+                "https://uploads.github.com/repos/ElJoker63/udyatstream-app/releases/$RELEASE_ID/assets?name=UDYATSTREAM-macos.zip" || echo "macOS upload failed"
+            fi
+            if [ -f "release/ios/UDYATSTREAM-ios.tar.gz" ]; then
+              echo "Uploading iOS..."
+              curl -s -X POST \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "Content-Type: application/gzip" \
+                --data-binary @"release/ios/UDYATSTREAM-ios.tar.gz" \
+                "https://uploads.github.com/repos/ElJoker63/udyatstream-app/releases/$RELEASE_ID/assets?name=UDYATSTREAM-ios.tar.gz" || echo "iOS upload failed"
+            fi
+            if [ -f "release/android/app-debug.apk" ]; then
+              echo "Uploading Android..."
+              curl -s -X POST \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "Content-Type: application/vnd.android.package-archive" \
+                --data-binary @"release/android/app-debug.apk" \
+                "https://uploads.github.com/repos/ElJoker63/udyatstream-app/releases/$RELEASE_ID/assets?name=app-debug.apk" || echo "Android upload failed"
+            fi
+            echo "=== Done ==="
+          else
+            echo "Failed to get release ID"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
