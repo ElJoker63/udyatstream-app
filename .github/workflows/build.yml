@@ -184,85 +184,69 @@ jobs:
             tar -czf ../UDYATSTREAM-ios.ipa .
           fi
 
-      - name: List release files
-        run: |
-          echo "=== release/ ==="
-          ls -la release/ 2>/dev/null || true
-          echo "=== release/android/ ==="
-          ls -la release/android/ 2>/dev/null || true
-          echo "=== release/windows/ ==="
-          ls -la release/windows/ 2>/dev/null || true
-          echo "=== release/linux/ ==="
-          ls -la release/linux/ 2>/dev/null || true
-          echo "=== release/macos/ ==="
-          ls -la release/macos/ 2>/dev/null || true
-          echo "=== release/ios/ ==="
-          ls -la release/ios/ 2>/dev/null || true
-          echo "=== Root directory ==="
-          ls -la *.apk *.zip *.ipa 2>/dev/null || true
-
       - name: Create Release
-        uses: actions/github-script@v7
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          script: |
-            const fs = require('fs');
-            
-            // Check files
-            const files = ['app-debug.apk', 'UDYATSTREAM-windows.zip', 'UDYATSTREAM-linux.zip', 'UDYATSTREAM-macos.zip', 'UDYATSTREAM-ios.ipa'];
-            console.log('=== Checking files ===');
-            for (const f of files) {
-              if (fs.existsSync(f)) {
-                const stats = fs.statSync(f);
-                console.log(`FOUND: ${f} (${stats.size} bytes)`);
-              } else {
-                console.log(`MISSING: ${f}`);
-              }
-            }
-            
-            // Create tag first
-            console.log('=== Creating tag ===');
-            try {
-              await github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'refs/tags/v1.0.0',
-                sha: context.sha
-              });
-              console.log('Tag created');
-            } catch (e) {
-              console.log('Tag might already exist:', e.message);
-            }
-            
-            // Create release
-            console.log('=== Creating release ===');
-            const release = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: 'v1.0.0',
-              name: 'UDYATSTREAM v1.0.0',
-              body: 'Automatic release with build artifacts',
-              draft: false,
-              prerelease: false
-            });
-            console.log('Release created with ID:', release.data.id);
-            
-            // Upload assets
-            console.log('=== Uploading assets ===');
-            for (const f of files) {
-              if (fs.existsSync(f)) {
-                console.log(`Uploading ${f}...`);
-                const data = fs.readFileSync(f);
-                try {
-                  await github.rest.repos.uploadReleaseAsset({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    release_id: release.data.id,
-                    name: f,
-                    data: data
-                  });
-                  console.log(`Uploaded: ${f}`);
-                } catch (e) {
-                  console.log(`Upload failed: ${f}`, e.message);
-                }
-              }
-            }
+          tag_name: v1.0.0
+          release_name: "UDYATSTREAM v1.0.0"
+          body: "Automatic release with build artifacts for all platforms"
+          draft: false
+          prerelease: false
+
+      - name: Upload Android APK
+        if: success()
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app-debug.apk
+          asset_name: app-debug.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload Windows
+        if: success()
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: UDYATSTREAM-windows.zip
+          asset_name: UDYATSTREAM-windows.zip
+          asset_content_type: application/zip
+
+      - name: Upload Linux
+        if: success()
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: UDYATSTREAM-linux.zip
+          asset_name: UDYATSTREAM-linux.zip
+          asset_content_type: application/zip
+
+      - name: Upload macOS
+        if: success()
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: UDYATSTREAM-macos.zip
+          asset_name: UDYATSTREAM-macos.zip
+          asset_content_type: application/zip
+
+      - name: Upload iOS
+        if: success()
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: UDYATSTREAM-ios.ipa
+          asset_name: UDYATSTREAM-ios.ipa
+          asset_content_type: application/octet-stream
