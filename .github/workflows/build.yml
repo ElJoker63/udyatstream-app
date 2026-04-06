@@ -52,9 +52,8 @@ jobs:
       - name: Build Android APK
         if: matrix.platform == 'android'
         run: |
-          cd android
-          ./gradlew assembleDebug --no-daemon || cd ..
-          flutter build apk --debug
+          flutter doctor
+          flutter build apk --debug --verbose 2>&1 | tail -50
 
       - name: Build iOS
         if: matrix.platform == 'ios'
