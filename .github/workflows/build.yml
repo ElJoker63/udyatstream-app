@@ -338,12 +338,18 @@ jobs:
           ls -la UDYATSTREAM-ios.ipa 2>/dev/null || echo "iOS file not found"
           if [ -f "UDYATSTREAM-ios.ipa" ]; then
             echo "Uploading iOS IPA..."
+            set -x
             RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
               -H "Content-Type: application/zip" \
               --data-binary @"UDYATSTREAM-ios.ipa" \
               "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-ios.ipa")
+            set +x
             echo "iOS response: $RESPONSE"
-            echo "iOS uploaded"
+            if echo "$RESPONSE" | grep -q "id"; then
+              echo "iOS uploaded successfully"
+            else
+              echo "iOS upload may have failed"
+            fi
           else
             echo "iOS: NOT FOUND"
           fi
