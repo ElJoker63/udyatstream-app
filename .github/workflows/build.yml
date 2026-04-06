@@ -326,11 +326,15 @@ jobs:
 
       - name: Upload iOS
         run: |
+          echo "Checking for iOS file..."
+          ls -la UDYATSTREAM-ios.ipa 2>/dev/null || echo "iOS file not found"
           if [ -f "UDYATSTREAM-ios.ipa" ]; then
-            curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
+            echo "Uploading iOS IPA..."
+            RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
               -H "Content-Type: application/zip" \
               --data-binary @"UDYATSTREAM-ios.ipa" \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-ios.ipa"
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-ios.ipa")
+            echo "iOS response: $RESPONSE"
             echo "iOS uploaded"
           else
             echo "iOS: NOT FOUND"
