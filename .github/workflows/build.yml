@@ -51,9 +51,7 @@ jobs:
 
       - name: Build Android APK
         if: matrix.platform == 'android'
-        run: |
-          flutter doctor
-          flutter build apk --debug --verbose 2>&1 | tail -50
+        run: flutter build apk --debug
 
       - name: Build iOS
         if: matrix.platform == 'ios'
@@ -133,30 +131,35 @@ jobs:
         with:
           name: android-apk
           path: release/android
+        continue-on-error: true
 
       - name: Download Windows
         uses: actions/download-artifact@v4
         with:
           name: windows-release
           path: release/windows
+        continue-on-error: true
 
       - name: Download iOS
         uses: actions/download-artifact@v4
         with:
           name: ios-release
           path: release/ios
+        continue-on-error: true
 
       - name: Download Linux
         uses: actions/download-artifact@v4
         with:
           name: linux-release
           path: release/linux
+        continue-on-error: true
 
       - name: Download macOS
         uses: actions/download-artifact@v4
         with:
           name: macos-release
           path: release/macos
+        continue-on-error: true
 
       - name: Create Windows zip
         run: |
