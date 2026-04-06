@@ -193,17 +193,26 @@ jobs:
           ls -la *.apk *.zip *.tar.gz 2>/dev/null || true
 
       - name: Create Release
-        continue-on-error: true
-        uses: softprops/action-gh-release@v2
-        with:
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-          files: |
-            app-debug.apk
-            UDYATSTREAM-windows.zip
-            UDYATSTREAM-linux.zip
-            UDYATSTREAM-macos.zip
-            UDYATSTREAM-ios.tar.gz
+        run: |
+          echo "=== Checking files ==="
+          for f in app-debug.apk UDYATSTREAM-windows.zip UDYATSTREAM-linux.zip UDYATSTREAM-macos.zip UDYATSTREAM-ios.tar.gz; do
+            if [ -f "$f" ]; then
+              echo "FOUND: $f ($(ls -lh $f | awk '{print $5}'))"
+            else
+              echo "MISSING: $f"
+            fi
+          done
+          echo ""
+          echo "=== Creating release with gh ==="
+          # Use GitHub CLI to create release with each file
+          gh release create v1.0.0 --title "UDYATSTREAM v1.0.0" --notes "Build artifacts" --draft=false --prerelease=false || true
+          echo "=== Uploading assets ==="
+          for f in app-debug.apk UDYATSTREAM-windows.zip UDYATSTREAM-linux.zip UDYATSTREAM-macos.zip UDYATSTREAM-ios.tar.gz; do
+            if [ -f "$f" ]; then
+              gh release upload v1.0.0 "$f" --clobber || echo "Upload failed: $f"
+            fi
+          done
+          echo "=== Listing releases ==="
+          gh release list
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
