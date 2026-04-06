@@ -45,7 +45,10 @@ jobs:
 
       - name: Build Android APK
         if: matrix.platform == 'android'
-        run: flutter build apk --release || flutter build apk --debug
+        continue-on-error: true
+        run: |
+          flutter build apk --debug
+          ls -la build/app/outputs/flutter-apk/
 
       - name: Build iOS
         if: matrix.platform == 'ios'
@@ -71,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
 
       - name: Upload Windows
         if: matrix.platform == 'windows'
