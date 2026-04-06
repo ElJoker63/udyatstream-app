@@ -204,7 +204,6 @@ jobs:
           prerelease: false
 
       - name: Upload Android APK
-        if: success()
         continue-on-error: true
         uses: actions/upload-release-asset@v1
         env:
@@ -216,7 +215,7 @@ jobs:
           asset_content_type: application/vnd.android.package-archive
 
       - name: Upload Windows
-        if: success()
+        continue-on-error: true
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
@@ -227,7 +226,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Upload Linux
-        if: success()
+        continue-on-error: true
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
@@ -238,7 +237,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Upload macOS
-        if: success()
+        continue-on-error: true
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
@@ -249,7 +248,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Upload iOS
-        if: success()
+        continue-on-error: true
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
