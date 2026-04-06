@@ -184,6 +184,12 @@ jobs:
             tar -czf ../UDYATSTREAM-ios.ipa .
           fi
 
+      - name: Copy Android APK to root
+        run: |
+          if [ -f "release/android/app-debug.apk" ]; then
+            cp release/android/app-debug.apk .
+          fi
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
