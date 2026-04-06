@@ -236,8 +236,8 @@ jobs:
         run: |
           if [ -d "release/ios" ] && [ "$(ls -A release/ios)" ]; then
             cd release/ios
-            zip -r ../../UDYATSTREAM-ios.zip .
-            echo "iOS ZIP created (as IPA alternative)"
+            zip -r ../../UDYATSTREAM-ios.ipa .
+            echo "iOS IPA created"
           else
             echo "iOS: No files"
           fi
@@ -255,7 +255,7 @@ jobs:
           ls -la *.zip *.apk 2>/dev/null || echo "Checking files..."
           [ -f "UDYATSTREAM-android.apk" ] && echo "Android: OK" || echo "Android: MISSING"
           [ -f "UDYATSTREAM-windows.zip" ] && echo "Windows: OK" || echo "Windows: MISSING"
-          [ -f "UDYATSTREAM-ios.zip" ] && echo "iOS: OK" || echo "iOS: MISSING"
+          [ -f "UDYATSTREAM-ios.ipa" ] && echo "iOS: OK" || echo "iOS: MISSING"
           [ -f "UDYATSTREAM-linux.zip" ] && echo "Linux: OK" || echo "Linux: MISSING"
           [ -f "UDYATSTREAM-macos.zip" ] && echo "macOS: OK" || echo "macOS: MISSING"
 
@@ -272,7 +272,7 @@ jobs:
             -d '{
               "tag_name": "v1.0.0",
               "name": "UDYATSTREAM v1.0.0",
-              "body": "Automatic release with build artifacts for all platforms.\n- Android: APK\n- iOS: ZIP\n- Windows: ZIP\n- Linux: ZIP\n- macOS: ZIP",
+              "body": "Automatic release with build artifacts for all platforms.\n- Android: APK\n- iOS: IPA\n- Windows: ZIP\n- Linux: ZIP\n- macOS: ZIP",
               "draft": false,
               "prerelease": false
             }' \
@@ -307,11 +307,11 @@ jobs:
 
       - name: Upload iOS
         run: |
-          if [ -f "UDYATSTREAM-ios.zip" ]; then
+          if [ -f "UDYATSTREAM-ios.ipa" ]; then
             curl -s -X POST -H "Authorization: token ${{ secrets.TOKEN }}" \
               -H "Content-Type: application/zip" \
-              --data-binary @"UDYATSTREAM-ios.zip" \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-ios.zip"
+              --data-binary @"UDYATSTREAM-ios.ipa" \
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.release_id }}/assets?name=UDYATSTREAM-ios.ipa"
             echo "iOS uploaded"
           else
             echo "iOS: NOT FOUND"
