@@ -175,6 +175,9 @@ jobs:
             tar -czf ../../UDYATSTREAM-ios.tar.gz .
           fi
 
+      - name: Check gh CLI
+        run: which gh && gh --version
+
       - name: List release files
         run: |
           echo "=== Release directory contents ==="
