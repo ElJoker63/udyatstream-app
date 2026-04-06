@@ -10,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +36,13 @@ jobs:
         with:
           channel: stable
 
+      - name: Setup Java
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
       - name: Get dependencies
         run: flutter pub get
 
@@ -45,7 +51,10 @@ jobs:
 
       - name: Build Android APK
         if: matrix.platform == 'android'
-        run: flutter build apk --debug
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon || cd ..
+          flutter build apk --debug
 
       - name: Build iOS
         if: matrix.platform == 'ios'
@@ -115,7 +124,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
-    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -126,35 +134,30 @@ jobs:
         with:
           name: android-apk
           path: release/android
-        continue-on-error: true
 
       - name: Download Windows
         uses: actions/download-artifact@v4
         with:
           name: windows-release
           path: release/windows
-        continue-on-error: true
 
       - name: Download iOS
         uses: actions/download-artifact@v4
         with:
           name: ios-release
           path: release/ios
-        continue-on-error: true
 
       - name: Download Linux
         uses: actions/download-artifact@v4
         with:
           name: linux-release
           path: release/linux
-        continue-on-error: true
 
       - name: Download macOS
         uses: actions/download-artifact@v4
         with:
           name: macos-release
           path: release/macos
-        continue-on-error: true
 
       - name: Create Windows zip
         run: |
@@ -177,51 +180,28 @@ jobs:
             zip -r ../../UDYATSTREAM-macos.zip .
           fi
 
-      - name: Create iOS tar.gz
+      - name: Create iOS archive (tar.gz)
         run: |
           if [ -d "release/ios" ]; then
             cd release/ios
-            tar -czf ../UDYATSTREAM-ios.ipa .
+            tar -czf ../UDYATSTREAM-ios.tar.gz .
           fi
 
-      - name: Copy Android APK to root
+      - name: List release files
         run: |
-          if [ -f "release/android/app-debug.apk" ]; then
-            cp release/android/app-debug.apk .
-          fi
-          if [ -f "release/windows/UDYATSTREAM-windows.zip" ]; then
-            cp release/windows/UDYATSTREAM-windows.zip .
-          fi
-          if [ -f "release/linux/UDYATSTREAM-linux.zip" ]; then
-            cp release/linux/UDYATSTREAM-linux.zip .
-          fi
-          if [ -f "release/macos/UDYATSTREAM-macos.zip" ]; then
-            cp release/macos/UDYATSTREAM-macos.zip .
-          fi
-          if [ -f "release/ios/UDYATSTREAM-ios.ipa" ]; then
-            cp release/ios/UDYATSTREAM-ios.ipa .
-          fi
+          ls -la
+          echo "=== Checking files ==="
+          [ -f "release/android/app-debug.apk" ] && echo "Android: OK" || echo "Android: MISSING"
+          [ -f "UDYATSTREAM-windows.zip" ] && echo "Windows: OK" || echo "Windows: MISSING"
+          [ -f "UDYATSTREAM-linux.zip" ] && echo "Linux: OK" || echo "Linux: MISSING"
+          [ -f "UDYATSTREAM-macos.zip" ] && echo "macOS: OK" || echo "macOS: MISSING"
+          [ -f "UDYATSTREAM-ios.tar.gz" ] && echo "iOS: OK" || echo "iOS: MISSING"
 
-      - name: Delete existing release if exists
+      - name: Delete existing release
         run: |
-          gh release delete v1.0.0 --yes || true
-          git push --delete origin v1.0.0 || true
+          gh release delete v1.0.0 --yes 2>/dev/null || true
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-
-      - name: List files before upload
-        run: |
-          echo "=== Current directory ==="
-          ls -la
-          echo ""
-          echo "=== Checking all files ==="
-          for f in app-debug.apk UDYATSTREAM-windows.zip UDYATSTREAM-linux.zip UDYATSTREAM-macos.zip UDYATSTREAM-ios.ipa; do
-            if [ -f "$f" ]; then
-              echo "FOUND: $f ($(ls -lh $f | awk '{print $5}'))"
-            else
-              echo "MISSING: $f"
-            fi
-          done
 
       - name: Create Release
         id: create_release
@@ -231,16 +211,23 @@ jobs:
         with:
           tag_name: v1.0.0
           release_name: "UDYATSTREAM v1.0.0"
-          body: "Automatic release with build artifacts for all platforms"
+          body: |
+            Automatic release with build artifacts for all platforms.
+            - Android: APK
+            - iOS: tar.gz
+            - Windows: zip
+            - Linux: zip
+            - macOS: zip
           draft: false
           prerelease: false
 
       - name: Upload Android APK
         run: |
-          if [ -f "app-debug.apk" ]; then
-            gh release upload v1.0.0 app-debug.apk --repo ElJoker63/udyatstream-app || echo "Android APK upload failed"
+          if [ -f "release/android/app-debug.apk" ]; then
+            gh release upload v1.0.0 "release/android/app-debug.apk" --clobber
+            echo "Android uploaded"
           else
-            echo "Android APK not found"
+            echo "Android: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
@@ -248,9 +235,10 @@ jobs:
       - name: Upload Windows
         run: |
           if [ -f "UDYATSTREAM-windows.zip" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-windows.zip --repo ElJoker63/udyatstream-app || echo "Windows upload failed"
+            gh release upload v1.0.0 UDYATSTREAM-windows.zip --clobber
+            echo "Windows uploaded"
           else
-            echo "Windows zip not found"
+            echo "Windows: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
@@ -258,9 +246,10 @@ jobs:
       - name: Upload Linux
         run: |
           if [ -f "UDYATSTREAM-linux.zip" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-linux.zip --repo ElJoker63/udyatstream-app || echo "Linux upload failed"
+            gh release upload v1.0.0 UDYATSTREAM-linux.zip --clobber
+            echo "Linux uploaded"
           else
-            echo "Linux zip not found"
+            echo "Linux: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
@@ -268,19 +257,21 @@ jobs:
       - name: Upload macOS
         run: |
           if [ -f "UDYATSTREAM-macos.zip" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-macos.zip --repo ElJoker63/udyatstream-app || echo "macOS upload failed"
+            gh release upload v1.0.0 UDYATSTREAM-macos.zip --clobber
+            echo "macOS uploaded"
           else
-            echo "macOS zip not found"
+            echo "macOS: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: Upload iOS
         run: |
-          if [ -f "UDYATSTREAM-ios.ipa" ]; then
-            gh release upload v1.0.0 UDYATSTREAM-ios.ipa --repo ElJoker63/udyatstream-app || echo "iOS upload failed"
+          if [ -f "UDYATSTREAM-ios.tar.gz" ]; then
+            gh release upload v1.0.0 UDYATSTREAM-ios.tar.gz --clobber
+            echo "iOS uploaded"
           else
-            echo "iOS ipa not found"
+            echo "iOS: NOT FOUND"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
