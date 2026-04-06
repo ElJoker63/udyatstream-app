@@ -175,8 +175,17 @@ jobs:
             tar -czf ../../UDYATSTREAM-ios.tar.gz .
           fi
 
+      - name: List release files
+        run: |
+          echo "=== Release directory contents ==="
+          find release -type f 2>/dev/null || echo "No release directory found"
+          echo "=== Current directory ==="
+          ls -la
+        shell: bash
+
       - name: Create Release
         continue-on-error: true
+        shell: bash
         run: |
           FILES=""
           if [ -f "release/android/app-debug.apk" ]; then
