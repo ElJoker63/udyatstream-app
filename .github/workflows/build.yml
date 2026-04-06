@@ -177,15 +177,23 @@ jobs:
 
       - name: List release files
         run: |
-          ls -la release/
+          echo "=== release/ ==="
+          ls -la release/ 2>/dev/null || true
+          echo "=== release/android/ ==="
           ls -la release/android/ 2>/dev/null || true
+          echo "=== release/windows/ ==="
           ls -la release/windows/ 2>/dev/null || true
+          echo "=== release/linux/ ==="
           ls -la release/linux/ 2>/dev/null || true
+          echo "=== release/macos/ ==="
           ls -la release/macos/ 2>/dev/null || true
+          echo "=== release/ios/ ==="
           ls -la release/ios/ 2>/dev/null || true
-          ls -la *.zip *.tar.gz 2>/dev/null || true
+          echo "=== Root directory ==="
+          ls -la *.apk *.zip *.tar.gz 2>/dev/null || true
 
       - name: Create Release
+        continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
           draft: false
