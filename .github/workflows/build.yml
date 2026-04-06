@@ -96,6 +96,7 @@ jobs:
         run: flutter build macos --release
 
       - name: Debug - List build outputs
+        continue-on-error: true
         run: |
           echo "=== Build outputs ==="
           if [ "${{ matrix.platform }}" = "android" ]; then
@@ -160,30 +161,35 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Android APK
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: android-apk
           path: release/android
 
       - name: Download Windows
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: windows-release
           path: release/windows
 
       - name: Download iOS Archive
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: ios-release
           path: release/ios
 
       - name: Download Linux
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: linux-release
           path: release/linux
 
       - name: Download macOS
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: macos-release
@@ -210,6 +216,7 @@ jobs:
           ls -la release/macos/ 2>/dev/null || echo "No macos"
 
       - name: Create Windows zip
+        continue-on-error: true
         run: |
           if [ -d "release/windows" ] && [ "$(ls -A release/windows)" ]; then
             cd release/windows
@@ -220,6 +227,7 @@ jobs:
           fi
 
       - name: Create Linux zip
+        continue-on-error: true
         run: |
           if [ -d "release/linux" ] && [ "$(ls -A release/linux)" ]; then
             cd release/linux
@@ -230,6 +238,7 @@ jobs:
           fi
 
       - name: Create macOS zip
+        continue-on-error: true
         run: |
           if [ -d "release/macos" ] && [ "$(ls -A release/macos)" ]; then
             cd release/macos
@@ -240,6 +249,7 @@ jobs:
           fi
 
       - name: Create iOS IPA
+        continue-on-error: true
         run: |
           if [ -d "release/ios" ] && [ "$(ls -A release/ios)" ]; then
             cd release/ios
@@ -250,6 +260,7 @@ jobs:
           fi
 
       - name: Rename Android APK if needed
+        continue-on-error: true
         run: |
           if [ -f "release/android/app-debug.apk" ]; then
             cp release/android/app-debug.apk UDYATSTREAM-android.apk
@@ -257,6 +268,7 @@ jobs:
           fi
 
       - name: List final artifacts
+        continue-on-error: true
         run: |
           echo "=== Final artifacts ==="
           ls -la *.zip *.apk 2>/dev/null || echo "Checking files..."
