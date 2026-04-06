@@ -236,56 +236,51 @@ jobs:
           prerelease: false
 
       - name: Upload Android APK
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
+        run: |
+          if [ -f "app-debug.apk" ]; then
+            gh release upload v1.0.0 app-debug.apk --repo ElJoker63/udyatstream-app || echo "Android APK upload failed"
+          else
+            echo "Android APK not found"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app-debug.apk
-          asset_name: app-debug.apk
-          asset_content_type: application/vnd.android.package-archive
 
       - name: Upload Windows
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
+        run: |
+          if [ -f "UDYATSTREAM-windows.zip" ]; then
+            gh release upload v1.0.0 UDYATSTREAM-windows.zip --repo ElJoker63/udyatstream-app || echo "Windows upload failed"
+          else
+            echo "Windows zip not found"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: UDYATSTREAM-windows.zip
-          asset_name: UDYATSTREAM-windows.zip
-          asset_content_type: application/zip
 
       - name: Upload Linux
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
+        run: |
+          if [ -f "UDYATSTREAM-linux.zip" ]; then
+            gh release upload v1.0.0 UDYATSTREAM-linux.zip --repo ElJoker63/udyatstream-app || echo "Linux upload failed"
+          else
+            echo "Linux zip not found"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: UDYATSTREAM-linux.zip
-          asset_name: UDYATSTREAM-linux.zip
-          asset_content_type: application/zip
 
       - name: Upload macOS
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
+        run: |
+          if [ -f "UDYATSTREAM-macos.zip" ]; then
+            gh release upload v1.0.0 UDYATSTREAM-macos.zip --repo ElJoker63/udyatstream-app || echo "macOS upload failed"
+          else
+            echo "macOS zip not found"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: UDYATSTREAM-macos.zip
-          asset_name: UDYATSTREAM-macos.zip
-          asset_content_type: application/zip
 
       - name: Upload iOS
-        continue-on-error: true
-        uses: actions/upload-release-asset@v1
+        run: |
+          if [ -f "UDYATSTREAM-ios.ipa" ]; then
+            gh release upload v1.0.0 UDYATSTREAM-ios.ipa --repo ElJoker63/udyatstream-app || echo "iOS upload failed"
+          else
+            echo "iOS ipa not found"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: UDYATSTREAM-ios.ipa
-          asset_name: UDYATSTREAM-ios.ipa
-          asset_content_type: application/octet-stream
